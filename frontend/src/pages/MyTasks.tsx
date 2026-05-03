@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckSquare, AlertCircle, Clock, CalendarDays, CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckSquare, AlertCircle, CalendarDays, Loader2 } from 'lucide-react';
 import api from '../lib/api';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Link } from 'react-router-dom';
