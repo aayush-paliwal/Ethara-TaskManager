@@ -214,7 +214,7 @@ export default function KanbanBoard() {
           <h2 className="text-3xl font-bold tracking-tight">{project.name}</h2>
           <div className="flex items-center gap-4 mt-2">
             <div className="flex items-center -space-x-2">
-              {project.members.map((m, i) => (
+              {project.members.map((m) => (
                 <div key={m.user.id} className="w-8 h-8 rounded-full bg-primary text-primary-foreground border-2 border-background flex items-center justify-center font-bold text-xs" title={m.user.name}>
                   {m.user.name.charAt(0).toUpperCase()}
                 </div>
