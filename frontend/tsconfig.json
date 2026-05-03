@@ -9,6 +9,7 @@
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "types": ["vite/client"],
+    "ignoreDeprecations": "6.0",
     "skipLibCheck": true,
 
     /* Bundler mode */
