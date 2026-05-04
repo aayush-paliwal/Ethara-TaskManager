@@ -1,8 +1,11 @@
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 import { CheckSquare, Clock, ListTodo, FolderKanban, Loader2 } from 'lucide-react';
-import api from '../lib/api';
+
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+import api from '@/lib/api';
+
 
 interface Metrics {
   totalTasks: number;
@@ -12,8 +15,8 @@ interface Metrics {
 }
 
 export default function Dashboard() {
-  const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [loading, setLoading] = useState(true);
+  const [metrics, setMetrics] = useState<Metrics | null>(null);
 
   useEffect(() => {
     const fetchMetrics = async () => {

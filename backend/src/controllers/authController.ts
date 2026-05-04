@@ -1,23 +1,25 @@
-import { Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import { Request, Response } from 'express';
+
 import prisma from '../lib/prisma';
-import { z } from 'zod';
+import { loginSchema, signupSchema } from '../schemas/authSchema';
 
-const signupSchema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(6),
-});
 
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
-});
+export const createUser = async (req: Request, res: Response) => {
+  const parsedSchema = signupSchema.safeParse(req.body);
 
-export const signup = async (req: Request, res: Response): Promise<void> => {
+  if (!parsedSchema.success) {
+    res.status(400).json({
+      message: "Validation failed",
+      errors: parsedSchema.error,
+    });
+
+    return;
+  }
+
   try {
-    const { name, email, password } = signupSchema.parse(req.body);
+    const { name, email, password } = parsedSchema.data;
     
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -35,17 +37,25 @@ export const signup = async (req: Request, res: Response): Promise<void> => {
     res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
     res.status(201).json({ message: 'User created successfully', user: { id: user.id, name: user.name, email: user.email } });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error });
-      return;
-    }
+    console.log("Error signup: ", error);   
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const loginUser = async (req: Request, res: Response) => {
+  const parsedSchema = loginSchema.safeParse(req.body);
+
+  if (!parsedSchema.success) {
+    res.status(400).json({
+      message: "Validation failed",
+      errors: parsedSchema.error,
+    });
+
+    return;
+  }
+
   try {
-    const { email, password } = loginSchema.parse(req.body);
+    const { email, password } = parsedSchema.data;
     
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
@@ -64,10 +74,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     res.cookie('token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'strict', maxAge: 7 * 24 * 60 * 60 * 1000 });
     res.status(200).json({ message: 'Logged in successfully', user: { id: user.id, name: user.name, email: user.email } });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error });
-      return;
-    }
+    console.log("Error login: ", error); 
     res.status(500).json({ error: 'Internal server error' });
   }
 };
@@ -77,7 +84,7 @@ export const logout = (req: Request, res: Response): void => {
   res.status(200).json({ message: 'Logged out successfully' });
 };
 
-export const me = async (req: Request, res: Response): Promise<void> => {
+export const me = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user?.id;
     if (!userId) {

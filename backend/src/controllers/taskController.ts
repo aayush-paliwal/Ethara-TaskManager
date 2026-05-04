@@ -1,22 +1,27 @@
-import { Request, Response } from 'express';
-import { Role, Status, Priority } from '@prisma/client';
-import prisma from '../lib/prisma';
 import { z } from 'zod';
+import { Request, Response } from 'express';
 
-const taskSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().optional(),
-  dueDate: z.string().optional().transform(val => val ? new Date(val) : undefined),
-  priority: z.nativeEnum(Priority).optional(),
-  status: z.nativeEnum(Status).optional(),
-  projectId: z.string(),
-  assigneeId: z.string().optional(),
-});
+import { Role, Status, Priority } from '@prisma/client';
 
-export const createTask = async (req: Request, res: Response): Promise<void> => {
+import prisma from '../lib/prisma';
+import { createTaskSchema, updateTaskSchema } from '../schemas/taskSchema';
+
+
+export const createTask = async (req: Request, res: Response) => {
+  const creatorId = (req as any).user.id;
+  const parsedSchema = createTaskSchema.safeParse(req.body);
+  
+  if(!parsedSchema.success) {
+    res.status(400).json({
+      message: "Validation failed",
+      errors: parsedSchema.error,
+    });
+    
+    return;
+  }
+  
   try {
-    const creatorId = (req as any).user.id;
-    const { title, description, dueDate, priority, status, projectId, assigneeId } = taskSchema.parse(req.body);
+    const { title, description, dueDate, priority, status, projectId, assigneeId } = parsedSchema.data;
 
     const projectMember = await prisma.projectMember.findUnique({
       where: { projectId_userId: { projectId, userId: creatorId } },
@@ -47,15 +52,12 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
 
     res.status(201).json({ task });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error });
-      return;
-    }
+    console.log("Task creation error: ", error);    
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-export const getTasks = async (req: Request, res: Response): Promise<void> => {
+export const getTasks = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
     const { projectId } = req.query;
@@ -111,20 +113,24 @@ export const getMyTasks = async (req: Request, res: Response): Promise<void> => 
   }
 };
 
-const updateTaskSchema = z.object({
-  title: z.string().optional(),
-  description: z.string().optional(),
-  dueDate: z.string().optional().transform(val => val ? new Date(val) : undefined),
-  priority: z.nativeEnum(Priority).optional(),
-  status: z.nativeEnum(Status).optional(),
-  assigneeId: z.string().optional().nullable(),
-});
+
 
 export const updateTask = async (req: Request, res: Response): Promise<void> => {
+  const userId = (req as any).user.id;
+  const taskId = req.params.taskId as string;
+  const parsedSchema = updateTaskSchema.safeParse(req.body);
+  
+  if (!parsedSchema.success) {
+    res.status(400).json({
+      message: "Validation failed",
+      errors: parsedSchema.error,
+    });
+    
+    return;
+  }
+  
   try {
-    const userId = (req as any).user.id;
-    const taskId = req.params.taskId as string;
-    const updateData = updateTaskSchema.parse(req.body);
+    const updateData = parsedSchema.data;
 
     const task = await prisma.task.findUnique({
       where: { id: taskId },
@@ -167,10 +173,7 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
 
     res.status(200).json({ task: updatedTask });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error });
-      return;
-    }
+    console.log("Task updation error: ", error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };

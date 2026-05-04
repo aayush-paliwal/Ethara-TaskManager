@@ -1,7 +1,10 @@
-import { Button } from '@/components/ui/button';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
 import { LayoutDashboard, FolderKanban, CheckSquare, LogOut } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+
+import { useAuthStore } from '@/store/authStore';
+
 
 export default function DashboardLayout() {
   const user = useAuthStore(state => state.user);

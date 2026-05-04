@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Plus, AlertCircle, Loader2 } from 'lucide-react';
-import api from '../lib/api';
-import { useAuthStore } from '../store/authStore';
 import { toast } from 'sonner';
+import { useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, AlertCircle, Loader2 } from 'lucide-react';
+
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+
+import api from '@/lib/api';
+import { useAuthStore } from '@/store/authStore';
 
 
 interface Task {
@@ -36,8 +38,8 @@ export default function KanbanBoard() {
   const [isTaskDialogOpen, setIsTaskDialogOpen] = useState(false);
   const [isMemberDialogOpen, setIsMemberDialogOpen] = useState(false);
   
-  const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'MEDIUM', assigneeId: 'unassigned' });
   const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [newTask, setNewTask] = useState({ title: '', description: '', priority: 'MEDIUM', assigneeId: 'unassigned' });
   
   const user = useAuthStore(state => state.user);
   
@@ -94,12 +96,11 @@ export default function KanbanBoard() {
 
   const updateTaskStatus = async (taskId: string, newStatus: string) => {
     try {
-      // Optimistic update
       setTasks(tasks.map(t => t.id === taskId ? { ...t, status: newStatus as any } : t));
       await api.patch(`/tasks/${taskId}`, { status: newStatus });
     } catch (error) {
       console.error('Failed to update task status', error);
-      fetchBoardData(); // Revert on failure
+      fetchBoardData(); 
     }
   };
 

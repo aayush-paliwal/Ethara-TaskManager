@@ -1,6 +1,8 @@
 import { Router } from 'express';
-import { getDashboardMetrics } from '../controllers/dashboardController';
+
 import { authenticate } from '../middleware/authMiddleware';
+import { getDashboardMetrics } from '../controllers/dashboardController';
+
 
 const router = Router();
 

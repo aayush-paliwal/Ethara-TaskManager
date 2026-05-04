@@ -1,9 +1,12 @@
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckSquare, AlertCircle, CalendarDays, Loader2 } from 'lucide-react';
-import api from '../lib/api';
+
+import api from '@/lib/api';
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Link } from 'react-router-dom';
+
 
 interface Task {
   id: string;

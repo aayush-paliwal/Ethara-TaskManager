@@ -1,17 +1,26 @@
 import { Request, Response } from 'express';
+
 import { Role } from '@prisma/client';
+
 import prisma from '../lib/prisma';
-import { z } from 'zod';
+import { projectSchema } from '../schemas/projectSchema';
 
-const projectSchema = z.object({
-  name: z.string().min(1),
-  description: z.string().optional(),
-});
 
-export const createProject = async (req: Request, res: Response): Promise<void> => {
+export const createProject = async (req: Request, res: Response) => {
+  const userId = (req as any).user.id;
+  const parsedSchema = projectSchema.safeParse(req.body);
+  
+  if (!parsedSchema.success) {
+    res.status(400).json({
+      message: "Validation failed",
+      errors: parsedSchema.error,
+    });
+    
+    return;
+  }
+  
   try {
-    const userId = (req as any).user.id;
-    const { name, description } = projectSchema.parse(req.body);
+    const { name, description } = parsedSchema.data;
 
     const project = await prisma.project.create({
       data: {
@@ -29,19 +38,15 @@ export const createProject = async (req: Request, res: Response): Promise<void> 
 
     res.status(201).json({ project });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      res.status(400).json({ error: error });
-      return;
-    }
+    console.log("Project creation error: ", error);
     res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-export const getProjects = async (req: Request, res: Response): Promise<void> => {
+export const getProjects = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
     
-    // Get projects where the user is a member
     const projects = await prisma.project.findMany({
       where: {
         members: {
@@ -64,7 +69,7 @@ export const getProjects = async (req: Request, res: Response): Promise<void> =>
   }
 };
 
-export const getProjectDetails = async (req: Request, res: Response): Promise<void> => {
+export const getProjectDetails = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
     const projectId = req.params.projectId as string;
@@ -96,7 +101,7 @@ export const getProjectDetails = async (req: Request, res: Response): Promise<vo
   }
 };
 
-export const addMember = async (req: Request, res: Response): Promise<void> => {
+export const addMember = async (req: Request, res: Response) => {
   try {
     const adminId = (req as any).user.id;
     const projectId = req.params.projectId as string;
@@ -135,6 +140,7 @@ export const addMember = async (req: Request, res: Response): Promise<void> => {
       res.status(400).json({ error: 'User is already a member of this project' });
       return;
     }
+
     res.status(500).json({ error: 'Internal server error' });
   }
 };

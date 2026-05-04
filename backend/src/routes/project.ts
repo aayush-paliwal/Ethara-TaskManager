@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { createProject, getProjects, getProjectDetails, addMember } from '../controllers/projectController';
+
 import { authenticate } from '../middleware/authMiddleware';
+import { createProject, getProjects, getProjectDetails, addMember } from '../controllers/projectController';
+
 
 const router = Router();
 
-// All project routes require authentication
 router.use(authenticate);
 
 router.post('/', createProject);

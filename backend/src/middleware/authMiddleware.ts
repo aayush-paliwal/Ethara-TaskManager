@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import { Request, Response, NextFunction } from 'express';
+
 
 export interface AuthRequest extends Request {
   user?: { id: string };
@@ -7,6 +8,7 @@ export interface AuthRequest extends Request {
 
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
   const token = req.cookies?.token;
+  console.log("Cookies: ", req.cookies);
   if (!token) {
     res.status(401).json({ error: 'Unauthorized: No token provided' });
     return;
